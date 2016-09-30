@@ -1,0 +1,22 @@
+{
+    "type": "library",
+    "name": "devimteam/data-importer",
+    "description": "Allows to you easily import any kind of data from any data providers",
+    "keywords": [],
+    "license": "",
+    "authors": [],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=7",
+        "silex/silex": "^2.0",
+        "doctrine/orm": "^2.5"
+    },
+    "require-dev": {
+        "codeception/codeception": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Devimteam\\Component\\DataImporter\\": "src/"
+        }
+    }
+}
