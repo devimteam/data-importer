@@ -1,8 +1,8 @@
 <?php
 
-namespace Devimteam\Component\DataImporter\Writer;
+namespace Devim\Component\DataImporter\Writer;
 
-use Devimteam\Component\DataImporter\Interfaces\TruncatableInterface;
+use Devim\Component\DataImporter\Interfaces\TruncatableInterface;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ORM\EntityManager;
 

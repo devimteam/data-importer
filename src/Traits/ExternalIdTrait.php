@@ -1,6 +1,6 @@
 <?php
 
-namespace Devimteam\Component\DataImporter\Traits;
+namespace Devim\Component\DataImporter\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 

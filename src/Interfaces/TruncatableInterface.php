@@ -1,6 +1,6 @@
 <?php
 
-namespace Devimteam\Component\DataImporter\Interfaces;
+namespace Devim\Component\DataImporter\Interfaces;
 
 /**
  * Interface TruncatableInterface

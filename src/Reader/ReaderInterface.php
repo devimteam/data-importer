@@ -1,6 +1,6 @@
 <?php
 
-namespace Devimteam\Component\DataImporter\Reader;
+namespace Devim\Component\DataImporter\Reader;
 
 interface ReaderInterface
 {

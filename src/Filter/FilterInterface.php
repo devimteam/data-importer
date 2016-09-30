@@ -1,6 +1,6 @@
 <?php
 
-namespace Devimteam\Component\DataImporter\Filter;
+namespace Devim\Component\DataImporter\Filter;
 
 interface FilterInterface
 {

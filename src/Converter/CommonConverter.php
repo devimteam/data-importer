@@ -1,6 +1,6 @@
 <?php
 
-namespace Devimteam\Component\DataImporter\Converter;
+namespace Devim\Component\DataImporter\Converter;
 
 /**
  * Class CommonConverter

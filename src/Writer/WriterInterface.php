@@ -1,6 +1,6 @@
 <?php
 
-namespace Devimteam\Component\DataImporter\Writer;
+namespace Devim\Component\DataImporter\Writer;
 
 /**
  * Interface WriterInterface.

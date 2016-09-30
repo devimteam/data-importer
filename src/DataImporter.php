@@ -1,12 +1,12 @@
 <?php
 
-namespace Devimteam\Component\DataImporter;
+namespace Devim\Component\DataImporter;
 
-use Devimteam\Component\DataImporter\Converter\ConverterInterface;
-use Devimteam\Component\DataImporter\Exception\UnexpectedTypeException;
-use Devimteam\Component\DataImporter\Filter\FilterInterface;
-use Devimteam\Component\DataImporter\Reader\ReaderInterface;
-use Devimteam\Component\DataImporter\Writer\WriterInterface;
+use Devim\Component\DataImporter\Converter\ConverterInterface;
+use Devim\Component\DataImporter\Exception\UnexpectedTypeException;
+use Devim\Component\DataImporter\Filter\FilterInterface;
+use Devim\Component\DataImporter\Reader\ReaderInterface;
+use Devim\Component\DataImporter\Writer\WriterInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 

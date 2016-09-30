@@ -16,7 +16,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Devimteam\\Component\\DataImporter\\": "src/"
+            "Devim\\Component\\DataImporter\\": "src/"
         }
     }
 }
