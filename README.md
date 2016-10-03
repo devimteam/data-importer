@@ -9,7 +9,7 @@ Allows to you easily import any kind of data from any data providers
 #### Install via composer
 
 ```
-$ composer require devimteam/data-importer
+$ composer require devimteam/silex-data-importer
 ```
 
 ## Use-cases
