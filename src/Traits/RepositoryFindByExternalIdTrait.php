@@ -77,7 +77,7 @@ trait RepositoryFindByExternalIdTrait
      */
     public function getLastExternalIdBySource(int $externalSource, $castToInt = true)
     {
-        $query = 'MAX(cast (e.externalId as bigint)) as maxExternalId';
+        $query = 'MAX(cast (e.externalId as int)) as maxExternalId';
 
         if (!$castToInt) {
             $query = 'MAX(e.externalId) as maxExternalId';

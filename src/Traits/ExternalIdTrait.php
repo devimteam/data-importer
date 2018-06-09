@@ -26,7 +26,7 @@ trait ExternalIdTrait
     /**
      * @var int|null
      *
-     * @ORM\Column(type="bigint", nullable=true)
+     * @ORM\Column(type="integer", nullable=true)
      */
     protected $externalSource;
 
