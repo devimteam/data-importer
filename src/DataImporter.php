@@ -45,10 +45,6 @@ class DataImporter
      */
     private $afterConvertFilterQueue;
 
-    /**
-     * @var bool
-     */
-    private $skipDataReadError = false;
 
     /**
      * Importer constructor.
@@ -154,12 +150,8 @@ class DataImporter
 
             $this->reader->afterRead();
 
-        } catch (\Exception $e) {
-            if ($this->skipDataReadError) {
-                $this->logger->error($e->getMessage());
-            } else {
-                throw $e;
-            }
+        } catch (\Throwable $e) {
+           $this->logger->error($e->getMessage(), $e->getTrace());
         }
 
         $this->doFinish();
@@ -237,18 +229,6 @@ class DataImporter
         foreach ($this->writers as $writer) {
             $writer->finish();
         }
-    }
-
-    /**
-     * @param bool $skipDataReadError
-     *
-     * @return $this
-     */
-    public function setSkipDataReadError(bool $skipDataReadError)
-    {
-        $this->skipDataReadError = $skipDataReadError;
-
-        return $this;
     }
 
     /**
