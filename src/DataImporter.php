@@ -7,6 +7,8 @@ use Devim\Component\DataImporter\Exception\UnexpectedTypeException;
 use Devim\Component\DataImporter\Filter\FilterInterface;
 use Devim\Component\DataImporter\Reader\ReaderInterface;
 use Devim\Component\DataImporter\Writer\WriterInterface;
+use Devim\Component\DataImporter\ExceptionHandler\ImportExceptionHandlerInterface;
+use Devim\Component\DataImporter\ExceptionHandler\LogHandler;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -26,9 +28,9 @@ class DataImporter
     private $writers = [];
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var ImportExceptionHandlerInterface
      */
-    private $logger;
+    private $exceptionHandler;
 
     /**
      * @var ConverterInterface[]
@@ -53,17 +55,17 @@ class DataImporter
      * @param array|WriterInterface[] $writers
      * @param array|ConverterInterface[] $converters
      * @param array|FilterInterface[] $filters
-     * @param LoggerInterface|null $logger
+     * @param ImportExceptionHandlerInterface|null $handler
      */
     public function __construct(
         ReaderInterface $reader,
         array $writers,
         array $converters = [],
         array $filters = [],
-        LoggerInterface $logger = null
+        ImportExceptionHandlerInterface $handler = null
     ) {
         $this->reader = $reader;
-        $this->logger = $logger ?: new NullLogger();
+        $this->exceptionHandler = $handler ?: new LogHandler();
         $this->beforeConvertFilterQueue = new \SplPriorityQueue();
         $this->afterConvertFilterQueue = new \SplPriorityQueue();
 
@@ -151,7 +153,8 @@ class DataImporter
             $this->reader->afterRead();
 
         } catch (\Throwable $e) {
-           $this->logger->error($e->getMessage(), $e->getTrace());
+           $data = $data ?? null;
+           $this->exceptionHandler->handle($e, $data);
         }
 
         $this->doFinish();
