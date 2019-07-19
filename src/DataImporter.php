@@ -64,10 +64,10 @@ class DataImporter
         array $filters = [],
         ImportExceptionHandlerInterface $handler = null
     ) {
-        $this->reader = $reader;
-        $this->exceptionHandler = $handler ?: new LogHandler();
+        $this->reader                   = $reader;
+        $this->exceptionHandler         = $handler ?: new LogHandler();
         $this->beforeConvertFilterQueue = new \SplPriorityQueue();
-        $this->afterConvertFilterQueue = new \SplPriorityQueue();
+        $this->afterConvertFilterQueue  = new \SplPriorityQueue();
 
         foreach ($writers as $writer) {
             $this->addWriter($writer);
@@ -129,14 +129,13 @@ class DataImporter
     {
         $this->doPrepare();
 
-        try {
-            $this->reader->beforeRead();
+        $this->reader->beforeRead();
 
-            foreach ($this->reader->read() as $data) {
+        foreach ($this->reader->read() as $data) {
+            try {
                 if (!$this->filterData($data, $this->beforeConvertFilterQueue)) {
                     continue;
                 }
-
                 $convertedData = $this->convertData($data);
 
                 if (!$convertedData) {
@@ -148,14 +147,14 @@ class DataImporter
                 }
 
                 $this->doWriteData($convertedData);
+            } catch (\Throwable $e) {
+                $data = $data ?? null;
+                $this->exceptionHandler->handle($e, $data);
             }
-
-            $this->reader->afterRead();
-
-        } catch (\Throwable $e) {
-           $data = $data ?? null;
-           $this->exceptionHandler->handle($e, $data);
         }
+
+        $this->reader->afterRead();
+
 
         $this->doFinish();
     }
@@ -175,7 +174,7 @@ class DataImporter
      *
      * @return bool
      */
-    protected function filterData($data, \SplPriorityQueue $filters) : bool
+    protected function filterData($data, \SplPriorityQueue $filters): bool
     {
         foreach (clone $filters as $filter) {
             if ($this->isBatchRequest($data)) {
@@ -184,8 +183,7 @@ class DataImporter
                         return false;
                     }
                 }
-            }
-            else {
+            } else {
                 if (false == $filter->filter($data)) {
                     return false;
                 }
@@ -198,9 +196,9 @@ class DataImporter
     /**
      * @param mixed $data
      *
+     * @return mixed
      * @throws UnexpectedTypeException
      *
-     * @return mixed
      */
     protected function convertData($data)
     {
@@ -239,7 +237,7 @@ class DataImporter
      *
      * @return bool
      */
-    private function isBatchRequest(array $payload) : bool
+    private function isBatchRequest(array $payload): bool
     {
         return array_keys($payload) === range(0, count($payload) - 1);
     }
