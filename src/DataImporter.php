@@ -3,6 +3,7 @@
 namespace Devim\Component\DataImporter;
 
 use Devim\Component\DataImporter\Converter\ConverterInterface;
+use Devim\Component\DataImporter\Exception\BadPersistsData;
 use Devim\Component\DataImporter\Exception\UnexpectedTypeException;
 use Devim\Component\DataImporter\Filter\FilterInterface;
 use Devim\Component\DataImporter\Reader\ReaderInterface;
@@ -147,16 +148,21 @@ class DataImporter
                 }
 
                 $this->doWriteData($convertedData);
-            } catch (\Throwable $e) {
-                $data = $data ?? null;
+            }catch (BadPersistsData $exception){
+                $this->exceptionHandler->handle($exception, $exception->getData());
+            }
+            catch (\Throwable $e) {
                 $this->exceptionHandler->handle($e, $data);
             }
         }
 
         $this->reader->afterRead();
 
-
-        $this->doFinish();
+        try {
+            $this->doFinish();
+        }catch (BadPersistsData $exception){
+            $this->exceptionHandler->handle($exception, $exception->getData());
+        }
     }
 
     /**

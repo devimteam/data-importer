@@ -2,6 +2,7 @@
 
 namespace Devim\Component\DataImporter\Writer;
 
+use Devim\Component\DataImporter\Exception\BadPersistsData;
 use Devim\Component\DataImporter\Interfaces\TruncatableInterface;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ORM\EntityManager;
@@ -292,17 +293,31 @@ class DoctrineWriter implements WriterInterface
     protected function batchEnd()
     {
         if ($this->counter >= $this->batchSize) {
-            $this->objectManager->flush();
-            $this->objectManager->clear();
+            $this->flushHandler();
         }
+    }
+
+    protected function flushHandler()
+    {
+        try {
+            $this->objectManager->flush();
+        } catch (\Throwable $parentException) {
+            $exception = new BadPersistsData("Failed to persists", 0, $parentException);
+
+            $exception->setData($this->objectManager->getUnitOfWork()->getIdentityMap());
+            $this->objectManager->clear();
+
+            throw new $exception;
+        }
+
+        $this->objectManager->clear();
     }
 
     /**
      */
     public function finish()
     {
-        $this->objectManager->flush();
-        $this->objectManager->clear();
+        $this->flushHandler();
         $this->counter = 0;
     }
 
