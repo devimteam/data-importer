@@ -3,6 +3,7 @@
 namespace Devim\Component\DataImporter;
 
 use Devim\Component\DataImporter\Converter\ConverterInterface;
+use Devim\Component\DataImporter\Dto\ProcessImportParameters;
 use Devim\Component\DataImporter\Exception\UnexpectedTypeException;
 use Devim\Component\DataImporter\Filter\FilterInterface;
 use Devim\Component\DataImporter\Reader\ReaderInterface;
@@ -123,9 +124,11 @@ class DataImporter
     }
 
     /**
+     * @var ProcessImportParameters $importParameters
+     *
      * @throws \Exception
      */
-    public function process()
+    public function process(ProcessImportParameters $importParameters)
     {
         $this->doPrepare();
 
