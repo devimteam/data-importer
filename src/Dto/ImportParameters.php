@@ -1,7 +1,7 @@
 <?php
 namespace Devim\Component\DataImporter\Dto;
 
-class ProcessImportParameters
+class ImportParameters
 {
     private $startTime;
 
