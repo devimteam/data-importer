@@ -3,6 +3,7 @@
 namespace Devim\Component\DataImporter\Writer;
 
 use Devim\Component\DataImporter\Exception\BadPersistsData;
+use Devim\Component\DataImporter\Exception\EntityManagerIsClosed;
 use Devim\Component\DataImporter\Interfaces\TruncatableInterface;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ORM\EntityManager;
@@ -302,10 +303,14 @@ class DoctrineWriter implements WriterInterface
         try {
             $this->objectManager->flush();
         } catch (\Throwable $parentException) {
-            $exception = new BadPersistsData("Failed to persists", 0, $parentException);
+
+            if($this->objectManager->isOpen()) {
+                $exception = new BadPersistsData("Failed to persists", 0, $parentException);
+            }else{
+                $exception = new EntityManagerIsClosed("Entity manager is closed", 0, $parentException);
+            }
 
             $exception->setData($this->objectManager->getUnitOfWork()->getIdentityMap());
-            $this->objectManager->clear();
 
             throw new $exception;
         }

@@ -4,6 +4,7 @@ namespace Devim\Component\DataImporter;
 
 use Devim\Component\DataImporter\Converter\ConverterInterface;
 use Devim\Component\DataImporter\Exception\BadPersistsData;
+use Devim\Component\DataImporter\Exception\EntityManagerIsClosed;
 use Devim\Component\DataImporter\Exception\UnexpectedTypeException;
 use Devim\Component\DataImporter\Filter\FilterInterface;
 use Devim\Component\DataImporter\Reader\ReaderInterface;
@@ -148,9 +149,16 @@ class DataImporter
                 }
 
                 $this->doWriteData($convertedData);
-            }catch (BadPersistsData $exception){
-                $this->exceptionHandler->handle($exception, $exception->getData());
             }
+            //Если EntityManager закрыт сделать ничего нельзя, выходим из программы
+            catch (EntityManagerIsClosed $exception){
+                $this->exceptionHandler->handle($exception, $exception->getData());
+
+                throw $exception;
+            }catch (BadPersistsData $persistsDataException){
+                $this->exceptionHandler->handle($persistsDataException, $persistsDataException->getData());
+            }
+            //Сталкивался с type error, когда в арчи кривые данные лежали
             catch (\Throwable $e) {
                 $this->exceptionHandler->handle($e, $data);
             }
@@ -160,6 +168,10 @@ class DataImporter
 
         try {
             $this->doFinish();
+        }catch (EntityManagerIsClosed $exception){
+            $this->exceptionHandler->handle($exception, $exception->getData());
+
+            throw $exception;
         }catch (BadPersistsData $exception){
             $this->exceptionHandler->handle($exception, $exception->getData());
         }
