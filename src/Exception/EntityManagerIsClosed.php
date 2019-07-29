@@ -6,11 +6,14 @@ namespace Devim\Component\DataImporter\Exception;
 
 class EntityManagerIsClosed extends \RuntimeException
 {
+    /**
+     * @var array
+     */
     private $data;
 
     /**
      * TODO:
-     * @return mixed
+     * @return array
      */
     public function getData()
     {
@@ -19,7 +22,7 @@ class EntityManagerIsClosed extends \RuntimeException
 
     /**
      * TODO:
-     * @param mixed $data
+     * @param array $data
      * @return $this
      */
     public function setData($data)

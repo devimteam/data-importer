@@ -125,10 +125,14 @@ class DataImporter
     }
 
     /**
+     * @return ImportResult
+     *
      * @throws \Exception
      */
-    public function process()
+    public function process() : ImportResult
     {
+        $importResult = new ImportResult();
+
         $this->doPrepare();
 
         $this->reader->beforeRead();
@@ -149,6 +153,8 @@ class DataImporter
                 }
 
                 $this->doWriteData($convertedData);
+
+                $importResult->incrementSuccessCount();
             }
             //Если EntityManager закрыт сделать ничего нельзя, выходим из программы
             catch (EntityManagerIsClosed $exception){
@@ -156,10 +162,14 @@ class DataImporter
 
                 throw $exception;
             }catch (BadPersistsData $persistsDataException){
+                $importResult->addErrors($persistsDataException->getData());
+
                 $this->exceptionHandler->handle($persistsDataException, $persistsDataException->getData());
             }
-            //Сталкивался с type error, когда в арчи кривые данные лежали
+            //Сталкивался с type error, когда в арчи кривые данные лежали при convertData
             catch (\Throwable $e) {
+                $importResult->addErrors([$data]);
+
                 $this->exceptionHandler->handle($e, $data);
             }
         }
@@ -174,7 +184,10 @@ class DataImporter
             throw $exception;
         }catch (BadPersistsData $exception){
             $this->exceptionHandler->handle($exception, $exception->getData());
+            $importResult->addErrors($exception->getData());
         }
+
+        return $importResult;
     }
 
     /**

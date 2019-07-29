@@ -310,7 +310,7 @@ class DoctrineWriter implements WriterInterface
                 $exception = new EntityManagerIsClosed("Entity manager is closed", 0, $parentException);
             }
 
-            $exception->setData($this->objectManager->getUnitOfWork()->getIdentityMap());
+            $exception->setData($this->getUnsavedEntities());
 
             throw new $exception;
         }
@@ -396,5 +396,23 @@ class DoctrineWriter implements WriterInterface
     public function setIsUpdate(bool $isUpdate)
     {
         $this->isUpdate = $isUpdate;
+    }
+
+    /**
+     *
+     * @return array
+     */
+    protected function getUnsavedEntities(): array
+    {
+        $result = [];
+        $data = $this->objectManager->getUnitOfWork()->getIdentityMap();
+
+        foreach ($data as $entityName=>$value){
+            foreach ($entityName as $hash=>$value){
+                $result[] = $value;
+            }
+        }
+
+        return $result;
     }
 }
