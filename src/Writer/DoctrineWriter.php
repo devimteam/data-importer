@@ -2,6 +2,8 @@
 
 namespace Devim\Component\DataImporter\Writer;
 
+use Devim\Component\DataImporter\Exception\BadPersistsData;
+use Devim\Component\DataImporter\Exception\EntityManagerIsClosed;
 use Devim\Component\DataImporter\Interfaces\TruncatableInterface;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ORM\EntityManager;
@@ -292,17 +294,35 @@ class DoctrineWriter implements WriterInterface
     protected function batchEnd()
     {
         if ($this->counter >= $this->batchSize) {
-            $this->objectManager->flush();
-            $this->objectManager->clear();
+            $this->flushHandler();
         }
+    }
+
+    protected function flushHandler()
+    {
+        try {
+            $this->objectManager->flush();
+        } catch (\Throwable $parentException) {
+
+            if($this->objectManager->isOpen()) {
+                $exception = new BadPersistsData("Failed to persists", 0, $parentException);
+            }else{
+                $exception = new EntityManagerIsClosed("Entity manager is closed", 0, $parentException);
+            }
+
+            $exception->setData($this->getUnsavedEntities());
+
+            throw new $exception;
+        }
+
+        $this->objectManager->clear();
     }
 
     /**
      */
     public function finish()
     {
-        $this->objectManager->flush();
-        $this->objectManager->clear();
+        $this->flushHandler();
         $this->counter = 0;
     }
 
@@ -376,5 +396,23 @@ class DoctrineWriter implements WriterInterface
     public function setIsUpdate(bool $isUpdate)
     {
         $this->isUpdate = $isUpdate;
+    }
+
+    /**
+     *
+     * @return array
+     */
+    protected function getUnsavedEntities(): array
+    {
+        $result = [];
+        $data = $this->objectManager->getUnitOfWork()->getIdentityMap();
+
+        foreach ($data as $entityName=>$value){
+            foreach ($entityName as $hash=>$value){
+                $result[] = $value;
+            }
+        }
+
+        return $result;
     }
 }
