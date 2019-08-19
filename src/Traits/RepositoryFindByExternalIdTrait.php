@@ -21,6 +21,22 @@ trait RepositoryFindByExternalIdTrait
 
     /**
      * @param string $externalId
+     *
+     * @return mixed|null
+     */
+    public function findByExternalIds(array $externalIds, $externalSource)
+    {
+        $qb = $this->createQueryBuilder('q')
+                   ->where('q.externalId IN (:externalIds) AND q.externalSource = :externalSource')
+                   ->setParameter('externalIds', $externalIds)
+                    ->setParameter('externalSource', $externalSource)
+                   ->getQuery() ;
+
+        return $qb->getArrayResult();
+    }
+
+    /**
+     * @param string $externalId
      * @param int $externalSource
      *
      * @return mixed|null
