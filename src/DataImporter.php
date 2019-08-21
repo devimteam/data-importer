@@ -4,6 +4,8 @@ namespace Devim\Component\DataImporter;
 
 use Devim\Component\DataImporter\Converter\ConverterInterface;
 use Devim\Component\DataImporter\Dto\ImportParameters;
+use Devim\Component\DataImporter\Exception\BadPersistsData;
+use Devim\Component\DataImporter\Exception\EntityManagerIsClosed;
 use Devim\Component\DataImporter\Exception\UnexpectedTypeException;
 use Devim\Component\DataImporter\Filter\FilterInterface;
 use Devim\Component\DataImporter\Reader\ReaderInterface;
@@ -124,6 +126,8 @@ class DataImporter
     }
 
     /**
+     * @return ImportResult
+     *
      * @throws \Exception
      * @var ImportParameters $importParameters
      *
@@ -131,6 +135,8 @@ class DataImporter
     public function process(ImportParameters $importParameters)
     {
         $this->reader->setImportParameters($importParameters);
+        $importResult = new ImportResult();
+
         $this->doPrepare();
 
         $this->reader->beforeRead();
@@ -151,16 +157,41 @@ class DataImporter
                 }
 
                 $this->doWriteData($convertedData);
-            } catch (\Throwable $e) {
-                $data = $data ?? null;
+
+                $importResult->incrementSuccessCount();
+            }
+            //Если EntityManager закрыт сделать ничего нельзя, выходим из программы
+            catch (EntityManagerIsClosed $exception){
+                $this->exceptionHandler->handle($exception, $exception->getData());
+
+                throw $exception;
+            }catch (BadPersistsData $persistsDataException){
+                $importResult->addErrors($persistsDataException->getData());
+
+                $this->exceptionHandler->handle($persistsDataException, $persistsDataException->getData());
+            }
+            //Сталкивался с type error, когда в арчи кривые данные лежали при convertData
+            catch (\Throwable $e) {
+                $importResult->addErrors([$data]);
+
                 $this->exceptionHandler->handle($e, $data);
             }
         }
 
         $this->reader->afterRead();
 
+        try {
+            $this->doFinish();
+        }catch (EntityManagerIsClosed $exception){
+            $this->exceptionHandler->handle($exception, $exception->getData());
 
-        $this->doFinish();
+            throw $exception;
+        }catch (BadPersistsData $exception){
+            $this->exceptionHandler->handle($exception, $exception->getData());
+            $importResult->addErrors($exception->getData());
+        }
+
+        return $importResult;
     }
 
     /**
