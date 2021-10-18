@@ -82,30 +82,18 @@ class ImportResult
         return $this;
     }
 
-    public function getSelectTime(): float
+    public function getSelectTime(): array
     {
-        if (!count($this->selectTime)) {
-            return 0.0;
-        }
-
-        return array_sum($this->selectTime) / count($this->selectTime);
+        return $this->selectTime;
     }
 
-    public function getConvertTime(): float
+    public function getConvertTime(): array
     {
-        if (!count($this->convertTime)) {
-            return 0.0;
-        }
-
-        return array_sum($this->convertTime) / count($this->convertTime);
+        return $this->convertTime;
     }
 
-    public function getInsertTime(): float
+    public function getInsertTime(): array
     {
-        if (!count($this->insertTime)) {
-            return 0.0;
-        }
-
-        return array_sum($this->insertTime) / count($this->insertTime);
+        return $this->insertTime;
     }
 }
