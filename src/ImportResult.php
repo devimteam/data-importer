@@ -65,13 +65,13 @@ class ImportResult
 
     public function addSelectTime(float $time): self
     {
-        $this->selectTime[] = $this;
+        $this->selectTime[] = $time;
         return $this;
     }
 
     public function addConvertTime(float $time): self
     {
-        $this->convertTime[] = $this;
+        $this->convertTime[] = $time;
         return $this;
     }
 
