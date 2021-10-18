@@ -7,11 +7,11 @@ use Devim\Component\DataImporter\Dto\ImportParameters;
 use Devim\Component\DataImporter\Exception\BadPersistsData;
 use Devim\Component\DataImporter\Exception\EntityManagerIsClosed;
 use Devim\Component\DataImporter\Exception\UnexpectedTypeException;
+use Devim\Component\DataImporter\ExceptionHandler\ImportExceptionHandlerInterface;
+use Devim\Component\DataImporter\ExceptionHandler\LogHandler;
 use Devim\Component\DataImporter\Filter\FilterInterface;
 use Devim\Component\DataImporter\Reader\ReaderInterface;
 use Devim\Component\DataImporter\Writer\WriterInterface;
-use Devim\Component\DataImporter\ExceptionHandler\ImportExceptionHandlerInterface;
-use Devim\Component\DataImporter\ExceptionHandler\LogHandler;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -139,15 +139,17 @@ class DataImporter
 
         $this->doPrepare();
 
+        $time = microtime(true);
         $this->reader->beforeRead();
-
+        $importResult->addSelectTime(microtime(true) - $time);
         foreach ($this->reader->read() as $data) {
             try {
                 if (!$this->filterData($data, $this->beforeConvertFilterQueue)) {
                     continue;
                 }
+                $time          = microtime(true);
                 $convertedData = $this->convertData($data);
-
+                $importResult->addConvertTime(microtime(true) - $time);
                 if (!$convertedData) {
                     continue;
                 }
@@ -156,21 +158,20 @@ class DataImporter
                     continue;
                 }
 
+                $time = microtime(true);
                 $this->doWriteData($convertedData);
-
+                $importResult->addInsertTime(microtime(true) - $time);
                 $importResult->incrementSuccessCount();
-            }
-            //Если EntityManager закрыт сделать ничего нельзя, выходим из программы
-            catch (EntityManagerIsClosed $exception){
+            } //Если EntityManager закрыт сделать ничего нельзя, выходим из программы
+            catch (EntityManagerIsClosed $exception) {
                 $this->exceptionHandler->handle($exception, $exception->getData());
 
                 throw $exception;
-            }catch (BadPersistsData $persistsDataException){
+            } catch (BadPersistsData $persistsDataException) {
                 $importResult->addErrors($persistsDataException->getData());
 
                 $this->exceptionHandler->handle($persistsDataException, $persistsDataException->getData());
-            }
-            //Сталкивался с type error, когда в арчи кривые данные лежали при convertData
+            } //Сталкивался с type error, когда в арчи кривые данные лежали при convertData
             catch (\Throwable $e) {
                 $importResult->addErrors([$data]);
 
@@ -182,11 +183,11 @@ class DataImporter
 
         try {
             $this->doFinish();
-        }catch (EntityManagerIsClosed $exception){
+        } catch (EntityManagerIsClosed $exception) {
             $this->exceptionHandler->handle($exception, $exception->getData());
 
             throw $exception;
-        }catch (BadPersistsData $exception){
+        } catch (BadPersistsData $exception) {
             $this->exceptionHandler->handle($exception, $exception->getData());
             $importResult->addErrors($exception->getData());
         }
